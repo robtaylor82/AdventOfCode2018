@@ -20,7 +20,7 @@ npm install
 
 ### Run
 
-Each script is covered by tests which run using Mocha. You can run tests locally using the command:
+Each script is covered by tests which run using Mocha. You can run tests (and the actual puzzles too) using the command:
 
 ``` bash
 mocha dayXX.js
