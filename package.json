@@ -1,0 +1,26 @@
+{
+  "name": "adventofcode2018",
+  "version": "1.0.0",
+  "description": "Solutions to the 2018 Advent of Code puzzles.",
+  "main": "day01.js",
+  "scripts": {
+    "test": "mocha day01.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robtaylor82/AdventOfCode2018.git"
+  },
+  "keywords": [
+    "advent-of-code"
+  ],
+  "author": "rob taylor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/robtaylor82/AdventOfCode2018/issues"
+  },
+  "homepage": "https://github.com/robtaylor82/AdventOfCode2018#readme",
+  "dependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}
