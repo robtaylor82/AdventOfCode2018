@@ -118,12 +118,12 @@ console.log('Repeat Frequency: ' + detectRepeatFrequency(input));
 
 describe('test repeat frequency detector', function(){
 
-    it('+3, +3, +4, -2, -4 first reaches 10 twice', function(){
-        detectRepeatFrequency([3, 3, 4, -2, -4]).should.be.equal(10);
-    });
-
     it('+1, -1 first reaches 0 twice', function(){
         detectRepeatFrequency([1, -1]).should.be.equal(0);
+    });
+
+    it('+3, +3, +4, -2, -4 first reaches 10 twice', function(){
+        detectRepeatFrequency([3, 3, 4, -2, -4]).should.be.equal(10);
     });
 
     it('-6, +3, +8, +5, -6 first reaches 5 twice', function(){
