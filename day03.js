@@ -42,8 +42,16 @@ Visually, these claim the following areas:
 The four square inches marked with X are claimed by both 1 and 2. (Claim 3, while adjacent to the others, does not overlap either of them.)
 
 ---Part one---
-
 If the Elves all proceed with their own plans, none of them will have enough fabric. How many square inches of fabric are within two or more claims?
+
+
+--- Part Two ---
+Amidst the chaos, you notice that exactly one claim doesn't overlap by even a single square inch of fabric with any other claim. If you can somehow draw attention to it, maybe the Elves will be able to make Santa's suit after all!
+
+For example, in the claims above, only claim 3 is intact after all claims are made.
+
+What is the ID of the only claim that doesn't overlap?
+
 
 */
 
@@ -64,13 +72,23 @@ function calculateOverlappingSquareInches(claims){
     }
 
     claims.forEach(claim => {
+
+        claim.overlapping = false;
+
         for(var y=claim.top; y < claim.top + claim.height; y++){
             for(var x=claim.left; x < claim.left + claim.width; x++){
                 
                 var currentSquareId = fabric[x][y];
 
-                if(currentSquareId){
+                if(currentSquareId && currentSquareId != claim.id){
+
                     fabric[x][y] = 'X';
+                    
+                    if(currentSquareId !== 'X'){
+                        claims.find(x => x.id === currentSquareId).overlapping = true;
+                    }
+
+                    claim.overlapping = true;
                 }
                 else{
                     fabric[x][y] = claim.id;
@@ -120,7 +138,10 @@ function buildClaims(input){
 var fs = require('fs');
 var claims = buildClaims(fs.readFileSync('day03-input.txt').toString());
 var overlappingSquares = calculateOverlappingSquareInches(claims);
+
 console.log('Overlaping square inches: ' + overlappingSquares);
+
+console.log('The following claim dose not overlap: ' + claims.find(x => !x.overlapping).id);
 
 
 describe('test claim builder', function(){
@@ -175,6 +196,28 @@ describe('test overlapping square inches calculator', function(){
         claims.push({id: 2, left: 5, top: 5, width:2, height:2});
 
         calculateOverlappingSquareInches(claims).should.be.equal(4);
+    });
+
+    it('claim is not marked as overlapping if none of its square inches overlap', function(){
+
+        var claims = [];
+        claims.push({id: 1, left: 1, top: 1, width:1, height:1});
+
+        calculateOverlappingSquareInches(claims);
+
+        claims[0].overlapping.should.be.equal(false);
+    });
+
+    it('both claims should be marked as overlapping if one of its squares overlaps', function(){
+
+        var claims = [];
+        claims.push({id: 1, left: 1, top: 1, width:1, height:1});
+        claims.push({id: 2, left: 1, top: 1, width:1, height:1});
+
+        calculateOverlappingSquareInches(claims);
+
+        claims[0].overlapping.should.be.equal(true);
+        claims[1].overlapping.should.be.equal(true);
     });
 });
 
