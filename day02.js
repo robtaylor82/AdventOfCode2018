@@ -33,6 +33,10 @@ What is the checksum for your list of box IDs?
 var chai = require('chai'), expect = chai.expect;
 chai.should();
 
+String.prototype.removeAt=function(index) {
+    return this.substr(0, index) + this.substr(index + 1, this.length);
+};
+
 // Part 1
 
 function containsExactlyTwoOrThreeCharactersOfAnyLetter(boxId){
@@ -116,3 +120,38 @@ describe('test calculateCheckSum function', function(){
 });
 
 
+
+// Part 2
+
+function findPrototypeFabricBoxes(boxIds){
+    boxIds.sort();
+
+    for(var i=1; i < boxIds.length; i++){
+        var firstId = boxIds[i-1];
+        var secondId = boxIds[i];
+        var removedCharacterCount = 0;
+
+        for(var n=0; n < firstId.length; n++){
+            if(firstId[n] !== secondId[n]){
+                firstId = firstId.removeAt(n);
+                secondId = secondId.removeAt(n);
+                n--;
+                removedCharacterCount++;
+            }    
+        }
+
+        if(removedCharacterCount === 1){
+            return firstId;
+        }
+    }
+}
+
+console.log('Prototype fabric box id: ' + findPrototypeFabricBoxes(input));
+
+describe('test findPrototypeFabricBoxes function', function(){
+
+    it('Multiplying these together produces a checksum of 4 * 3 = 12.', function(){
+
+        findPrototypeFabricBoxes(['abcde', 'fghij', 'klmno', 'pqrst', 'fguij', 'axcye', 'wvxyz']).should.be.equal('fgij');
+    });
+});
