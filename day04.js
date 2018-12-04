@@ -50,6 +50,20 @@ In the example above, Guard #10 spent the most minutes asleep, a total of 50 min
 While this example listed the entries in chronological order, your entries are in the order you found them. You'll need to organize them before they can be analyzed.
 
 What is the ID of the guard you chose multiplied by the minute you chose? (In the above example, the answer would be 10 * 24 = 240.)
+
+Your puzzle answer was 84834.
+
+The first half of this puzzle is complete! It provides one gold star: *
+
+--- Part Two ---
+Strategy 2: Of all guards, which guard is most frequently asleep on the same minute?
+
+In the example above, Guard #99 spent minute 45 asleep more than any other guard or minute - three times in total. (In all other cases, any guard spent any minute asleep at most twice.)
+
+What is the ID of the guard you chose multiplied by the minute you chose? (In the above example, the answer would be 99 * 45 = 4455.)
+
+
+
 */
 
 
@@ -68,6 +82,23 @@ Array.prototype.default = function (what, length) {
 Array.prototype.max = function () {
     return Math.max.apply(null, this);
 };
+
+Array.prototype.contains = function(v) {
+    for(var i = 0; i < this.length; i++) {
+        if(this[i] === v) return true;
+    }
+    return false;
+};
+
+Array.prototype.unique = function() {
+    var arr = [];
+    for(var i = 0; i < this.length; i++) {
+        if(!arr.includes(this[i])) {
+            arr.push(this[i]);
+        }
+    }
+    return arr; 
+}
 
 function Shift(guardId) {
     this.guardId = guardId;
@@ -169,17 +200,20 @@ function findGuardWhoSleptTheMost(shiftDetails) {
 }
 
 function findMinuteMostCommonlySleptOn(guardId, shiftDetails) {
-    shiftDetails = shiftDetails.filter(x => x.guardId === guardId);
+    var guardShiftDetails = shiftDetails.filter(x => x.guardId === guardId);
 
-    while (shiftDetails.length !== 1) {
-        var lastShift = shiftDetails.pop();
+    while (guardShiftDetails.length !== 1) {
+        var lastShift = guardShiftDetails.pop();
 
         for (var i = 0; i < 59; i++) {
-            shiftDetails[0].minutes[i] = shiftDetails[0].minutes[i] + lastShift.minutes[i];
+            guardShiftDetails[0].minutes[i] = guardShiftDetails[0].minutes[i] + lastShift.minutes[i];
         }
     }
 
-    return shiftDetails[0].minutes.indexOf(shiftDetails[0].minutes.max());
+    return {
+        mostCommonMinute: guardShiftDetails[0].minutes.indexOf(guardShiftDetails[0].minutes.max()),
+        totalMinutes: guardShiftDetails[0].minutes.max()
+    };
 }
 
 var fs = require('fs');
@@ -187,10 +221,39 @@ var input = fs.readFileSync('day04-input.txt').toString();
 var guardEvents = parseInputIntoGuardEvents(input);
 var shiftDetails = buildShiftDetails(guardEvents);
 var guardWhoSleptTheMost = findGuardWhoSleptTheMost(shiftDetails);
-var minuteMostCommonlySlepOn = findMinuteMostCommonlySleptOn(guardWhoSleptTheMost, shiftDetails);
+var minuteMostCommonlySlepOn = findMinuteMostCommonlySleptOn(guardWhoSleptTheMost, shiftDetails).mostCommonMinute;
 
 console.log("Guard who slept the most " + guardWhoSleptTheMost + ", and the most common minute to be asleep was 00:" + minuteMostCommonlySlepOn);
-console.log("Puzzle Answer: " + guardWhoSleptTheMost * minuteMostCommonlySlepOn);
+console.log("Puzzle Answer (Part 1): " + guardWhoSleptTheMost * minuteMostCommonlySlepOn);
+
+//Part 2
+
+function findMinuteMostCommonlySleptOnByAnyGuard(shiftDetails) {
+
+    var result = {guard: 0, minute: 0, totalTimeAsleep: 0};
+    var guards = [];
+    shiftDetails.forEach(x=>guards.push(x.guardId));
+
+    guards.unique().forEach(guard => {
+        var mostCommonMinuteAsleep = findMinuteMostCommonlySleptOn(guard, shiftDetails);
+
+        if(mostCommonMinuteAsleep.totalMinutes > result.totalTimeAsleep){
+            result.totalTimeAsleep = mostCommonMinuteAsleep.totalMinutes;
+            result.minute = mostCommonMinuteAsleep.mostCommonMinute;
+            result.guard = guard;
+        }
+    });
+
+    return result;
+}
+
+var guardEvents = parseInputIntoGuardEvents(input);
+var shiftDetails = buildShiftDetails(guardEvents);
+var mostTimeAsleepOnTheSameMinute = findMinuteMostCommonlySleptOnByAnyGuard(shiftDetails);
+console.log("Guard who spent the most time asleep on the same minute was " + mostTimeAsleepOnTheSameMinute.guard + ", and the minute was 00:" + mostTimeAsleepOnTheSameMinute.minute + " (for a total of " + mostTimeAsleepOnTheSameMinute.totalTimeAsleep + " minutes).");
+console.log("Puzzle Answer (Part 2): " + mostTimeAsleepOnTheSameMinute.guard * mostTimeAsleepOnTheSameMinute.minute);
+
+
 //Tests
 
 describe('test parse input row', function () {
@@ -273,14 +336,13 @@ describe('find the minute most commonly slept on', function () {
         guardEvents.push(parseInputRow('[2018-01-01 00:00] Guard #1 begins shift'));
         guardEvents.push(parseInputRow('[2018-01-01 00:01] falls asleep'));
         guardEvents.push(parseInputRow('[2018-01-01 00:03] wakes up'));
-        findMinuteMostCommonlySleptOn(1, buildShiftDetails(guardEvents)).should.be.equal(1);
+        findMinuteMostCommonlySleptOn(1, buildShiftDetails(guardEvents)).mostCommonMinute.should.be.equal(1);
     });
 });
 
 describe('example from puzzle description', function () {
     it('guard id 10 slept on minute 24 the most', function () {
         var guardEvents = [];
-
         guardEvents.push(parseInputRow('[1518-11-01 00:00] Guard #10 begins shift'));
         guardEvents.push(parseInputRow('[1518-11-01 00:05] falls asleep'));
         guardEvents.push(parseInputRow('[1518-11-01 00:25] wakes up'));
@@ -299,6 +361,30 @@ describe('example from puzzle description', function () {
         guardEvents.push(parseInputRow('[1518-11-05 00:45] falls asleep'));
         guardEvents.push(parseInputRow('[1518-11-05 00:55] wakes up'));
         findGuardWhoSleptTheMost(buildShiftDetails(guardEvents)).should.be.equal(10);
-        findMinuteMostCommonlySleptOn(10, buildShiftDetails(guardEvents)).should.be.equal(24);
+        findMinuteMostCommonlySleptOn(10, buildShiftDetails(guardEvents)).mostCommonMinute.should.be.equal(24);
+    });
+
+    it('Guard #99 spent minute 45 asleep more than any other guard or minute', function () {
+        var guardEvents = [];
+        guardEvents.push(parseInputRow('[1518-11-01 00:00] Guard #10 begins shift'));
+        guardEvents.push(parseInputRow('[1518-11-01 00:05] falls asleep'));
+        guardEvents.push(parseInputRow('[1518-11-01 00:25] wakes up'));
+        guardEvents.push(parseInputRow('[1518-11-01 00:30] falls asleep'));
+        guardEvents.push(parseInputRow('[1518-11-01 00:55] wakes up'));
+        guardEvents.push(parseInputRow('[1518-11-01 23:58] Guard #99 begins shift'));
+        guardEvents.push(parseInputRow('[1518-11-02 00:40] falls asleep'));
+        guardEvents.push(parseInputRow('[1518-11-02 00:50] wakes up'));
+        guardEvents.push(parseInputRow('[1518-11-03 00:05] Guard #10 begins shift'));
+        guardEvents.push(parseInputRow('[1518-11-03 00:24] falls asleep'));
+        guardEvents.push(parseInputRow('[1518-11-03 00:29] wakes up'));
+        guardEvents.push(parseInputRow('[1518-11-04 00:02] Guard #99 begins shift'));
+        guardEvents.push(parseInputRow('[1518-11-04 00:36] falls asleep'));
+        guardEvents.push(parseInputRow('[1518-11-04 00:46] wakes up'));
+        guardEvents.push(parseInputRow('[1518-11-05 00:03] Guard #99 begins shift'));
+        guardEvents.push(parseInputRow('[1518-11-05 00:45] falls asleep'));
+        guardEvents.push(parseInputRow('[1518-11-05 00:55] wakes up'));
+        findMinuteMostCommonlySleptOnByAnyGuard(buildShiftDetails(guardEvents)).minute.should.be.equal(45);
+        findMinuteMostCommonlySleptOnByAnyGuard(buildShiftDetails(guardEvents)).guard.should.be.equal(99);
+        findMinuteMostCommonlySleptOnByAnyGuard(buildShiftDetails(guardEvents)).totalTimeAsleep.should.be.equal(3);
     });
 });
