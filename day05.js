@@ -26,14 +26,12 @@ After all possible reactions, the resulting polymer contains 10 units.
 How many units remain after fully reacting the polymer you scanned? (Note: in this puzzle and others, the input is large; if you copy/paste your input, make sure you get the whole thing.)
 */
 
-// Setup
-
 'use strict';
 
 var chai = require('chai'), expect = chai.expect;
 chai.should();
 
-var input = require('fs').readFileSync('day05-input.txt').toString();
+var input = require('fs').readFileSync('day05-input.txt').toString().trim();
 
 String.prototype.characterCaseMatches = function (other) {
     var otherIsUpperCase;
@@ -66,14 +64,12 @@ function calculatePolymerReactions(polymer){
 
         if(currentUnit.toUpperCase() === nextUnit.toUpperCase() && !currentUnit.characterCaseMatches(nextUnit)){
             units.splice(i, 2);
-            i--;
+            i = -1;
         }
     }
 
     return units.join('');
 }
-
-// SOLVE PROBLEM HERE
 
 console.log('resulting polymer should be ' + calculatePolymerReactions(input).length + ' units long.');
 
@@ -82,6 +78,23 @@ console.log('resulting polymer should be ' + calculatePolymerReactions(input).le
 describe('test calculatePolymerReactions function', function(){
     it("aA Polymer should react and result in a blank string", function(){
         calculatePolymerReactions('aA').should.be.equal('');
+    });
+    it("AA Polymer should not react", function(){
+        calculatePolymerReactions('AA').should.be.equal('AA');
+    });
+    it("aa Polymer should not react", function(){
+        calculatePolymerReactions('aa').should.be.equal('aa');
+    });
+    it("In abBA, bB destroys itself, leaving aA. As above, this then destroys itself, leaving nothing.", function(){
+        calculatePolymerReactions('abBA').should.be.equal('');
+    });
+    it("In abAB, no two adjacent units are of the same type, and so nothing happens.", function(){
+        calculatePolymerReactions('abAB').should.be.equal('abAB');
+    });it("In aabAAB, even though aa and AA are of the same type, their polarities match, and so nothing happens.", function(){
+        calculatePolymerReactions('aabAAB').should.be.equal('aabAAB');
+    });
+    it("aB Polymer should not react", function(){
+        calculatePolymerReactions('aB').should.be.equal('aB');
     });
     it("aAa Polymer should react and result in a string of a", function(){
         calculatePolymerReactions('aAa').should.be.equal('a');
@@ -92,7 +105,7 @@ describe('test calculatePolymerReactions function', function(){
     it("dabAcCaCBAcCcaDA Polymer should react until the remaining units read dabCBAcaDA", function(){
         calculatePolymerReactions('dabAcCaCBAcCcaDA').should.be.equal('dabCBAcaDA');
     });
-    it("dabCBAcaDA        Resulting polymer should be 10 units long", function(){
+    it("dabAcCaCBAcCcaDA Resulting polymer should be 10 units long", function(){
         calculatePolymerReactions('dabAcCaCBAcCcaDA').length.should.be.equal(10);
     });
 });
