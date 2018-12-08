@@ -21,6 +21,7 @@
   "homepage": "https://github.com/robtaylor82/AdventOfCode2018#readme",
   "dependencies": {
     "chai": "^4.2.0",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "topsort": "0.0.2"
   }
 }
